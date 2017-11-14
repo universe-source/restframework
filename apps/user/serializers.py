@@ -7,7 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         #  exclude = ('is_staff', )
-        fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'date_joined')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -22,4 +22,4 @@ class PersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = ('user', 'age')
+        fields = ('user', 'age', 'updated', 'created')

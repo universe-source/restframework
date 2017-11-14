@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 import os
 from configurations import Configuration
+from django.contrib import messages
 
 from .static_config import StaticConfig
 from .log_config import LogConfig
@@ -31,6 +32,8 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
 
     # Application definition
     INSTALLED_APPS = [
+        # 确保安装django 1.9以上版本, 否则rest报错
+        'django_admin_bootstrapped',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -39,6 +42,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
         'django.contrib.staticfiles',
 
         'rest_framework',
+        'rest_framework_swagger',
         # shell_plus
         'django_extensions',
     ]
@@ -49,7 +53,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
 
     INSTALLED_APPS = INSTALLED_APPS + CUSTOMS_APPS
 
-    MIDDLEWARE = [
+    MIDDLEWARE_CLASSES = [
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
@@ -79,3 +83,11 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
             'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
         },
     ]
+
+    # bootstrap3
+    DAB_FIELD_RENDERER = 'django_admin_bootstrapped.renderers.BootstrapFieldRenderer'
+    MESSAGE_TAGS = {
+        messages.SUCCESS: 'alert-success success',
+        messages.WARNING: 'alert-warning warning',
+        messages.ERROR: 'alert-danger error'
+    }

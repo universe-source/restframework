@@ -15,12 +15,23 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+try:
+    from swagger_schema import get_swagger_view
+except:
+    from rest_framework_swagger.views import get_swagger_view
+
+
+# url用于设置swagger上的所有接口的前缀 URL, 默认为空, 另外 BASE URL 显示不正常
+#  schema_views = get_swagger_view(title='Shop API', url='/swagger/')
+schema_views = get_swagger_view(title='Shop API')
 
 urlpatterns = [
     # django 自带的用户管理后台
     url(r'^admin/', admin.site.urls),
     # REST Framework自带的API 后台
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # swagger
+    url(r'^swagger/', schema_views),
     # 用户
     url(r'^', include('apps.user.urls')),
 ]
