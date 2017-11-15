@@ -2,9 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from customs.models import UpdateTable
+from customs.models import UpdateTable, DateTimeModel
 from apps.config import GENDERS, GENDER_UNKNOWN
-from apps.models import DateTimeModel
 
 
 class Person(UpdateTable, DateTimeModel):
@@ -14,8 +13,8 @@ class Person(UpdateTable, DateTimeModel):
         http://python.usyiyi.cn/documents/django_182/topics/db/examples/one_to_one.html
     获取queryset时, 实际 SQL 命令:
         SELECT `user_person`.`id`, `user_person`.`user_id`, `user_person`.`age`
-        FROM `user_person` INNER JOIN `auth_user` 
-        ON (`user_person`.`user_id` = `auth_user`.`id`) 
+        FROM `user_person` INNER JOIN `auth_user`
+        ON (`user_person`.`user_id` = `auth_user`.`id`)
         ORDER BY `auth_user`.`date_joined` DESC
     """
     user = models.OneToOneField(User)
@@ -25,8 +24,8 @@ class Person(UpdateTable, DateTimeModel):
     birthday = models.DateTimeField(default=timezone.now)
     country_code = models.CharField(max_length=2, default='CN')
 
-    def __unicode__(self):
-        return 'People {}'.format(self.user.id)
+    def __str__(self):
+        return 'People {} {}'.format(self.user.id, self.nickname)
 
     class Meta(object):
         db_table = 'person'

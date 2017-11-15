@@ -7,17 +7,17 @@
 from django.contrib.auth.models import Group
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from customs import model_update, SimpleResponse
 
+from customs import model_update, SimpleResponse
 from .models import Person
 from .serializers import PersonSerializer, GroupSerializer
 
 
 class PersonViewSet(viewsets.ViewSet):
     """
-    Typically, rather than explicitly registering the views in a viewsets in the urlconf,
-    you'll register the viewset with a router class, that automatically determines the 
-    urlconf for you.
+    Typically, rather than explicitly registering the views in a viewsets in
+    the urlconf, you'll register the viewset with a router class, that automatically
+    determines the urlconf for you.
     """
     # 用于下面的list接口, 如果 API 中没有使用到queryset, 那么实际上不会产生任何效果
     # PS: 如果在程序运行一段时间之后, 利用 SQL 在用户表中增加一个新用户, 则因为缓存
@@ -26,6 +26,7 @@ class PersonViewSet(viewsets.ViewSet):
     serializer_class = PersonSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'id'
+    # 覆盖setting中的权限
     permission_classes = []
 
     def serialize(self, user):
@@ -47,7 +48,6 @@ class PersonViewSet(viewsets.ViewSet):
             type: string
             location: query
         """
-        print('Query:', request.query_params)
         filter_query = {}
         if 'nickname' in request.query_params:
             filter_query['nickname__icontains'] = request.query_params['nickname']
@@ -56,15 +56,15 @@ class PersonViewSet(viewsets.ViewSet):
 
         return SimpleResponse(self.serialize_objs(self.queryset.filter(**filter_query)))
 
-    def retrieve(self, request, id):
+    def retrieve(self, request, pid):
         """关于django onetooneField, 必须确保relationFields是一致的.
         Person表虽然会创建id字段, 但是查询时应该使用user_id
         """
         #  person = Person.objects.get(user__id=id)
-        person = get_object_or_404(self.queryset, id=id)
+        person = get_object_or_404(self.queryset, id=pid)
         return SimpleResponse(self.serialize(person))
 
-    def update(self, request, id):
+    def update(self, request, pid):
         """
         desc: update a user
         parameters:
@@ -81,7 +81,7 @@ class PersonViewSet(viewsets.ViewSet):
                 "age": 8
             }
         """
-        person = get_object_or_404(self.queryset, id=id)
+        person = get_object_or_404(self.queryset, id=pid)
         user_params = request.data.pop('user', {})
         person_params = {}
         for key in ('age', ):
@@ -110,6 +110,6 @@ class GroupViewSet(viewsets.ModelViewSet):
     def list(self, request):
         return SimpleResponse(self.serialize_objs(self.queryset))
 
-    def retrieve(self, request, id):
-        group = get_object_or_404(self.queryset, id=id)
+    def retrieve(self, request, gid):
+        group = get_object_or_404(self.queryset, id=gid)
         return SimpleResponse(self.serialize(group))

@@ -49,6 +49,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
 
     CUSTOMS_APPS = [
         'apps.user',
+        'apps.study',
     ]
 
     INSTALLED_APPS = INSTALLED_APPS + CUSTOMS_APPS
