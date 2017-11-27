@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from customs.models import UpdateTable, DateTimeModel
+from customs.models import UpdateTable, DateTimeModel, CacheableManager
 from apps.config import GENDERS, GENDER_UNKNOWN
 
 
@@ -17,12 +17,15 @@ class Person(UpdateTable, DateTimeModel):
         ON (`user_person`.`user_id` = `auth_user`.`id`)
         ORDER BY `auth_user`.`date_joined` DESC
     """
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User)  # 确保email是唯一的
     nickname = models.CharField(max_length=50, blank=True)
     age = models.IntegerField(default=0)
     gender = models.CharField(max_length=10, choices=GENDERS, default=GENDER_UNKNOWN)
     birthday = models.DateTimeField(default=timezone.now)
     country_code = models.CharField(max_length=2, default='CN')
+    province = models.CharField(max_length=50, blank=True)
+
+    objects = CacheableManager()
 
     def __str__(self):
         return 'People {} {}'.format(self.user.id, self.nickname)

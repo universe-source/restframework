@@ -26,7 +26,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
     SECRET_KEY = '7uv3esw%3!p1h88!j*bz%@5go@dmy0e@_)zx=762oi!dif03zx'
 
     # SECURITY WARNING: don't run with debug turned on in production!
-    DEBUG = False
+    DEBUG = True
 
     ALLOWED_HOSTS = []
 
@@ -43,6 +43,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
 
         'rest_framework',
         'rest_framework_swagger',
+        'rest_framework.authtoken',
         # shell_plus
         'django_extensions',
     ]
@@ -92,3 +93,9 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
         messages.WARNING: 'alert-warning warning',
         messages.ERROR: 'alert-danger error'
     }
+
+    # log
+    if DEBUG:
+        # make all loggers use the console.
+        for logger in LogConfig.LOGGING['loggers']:
+            LogConfig.LOGGING['loggers'][logger]['handlers'] = ['console']

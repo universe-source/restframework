@@ -5,7 +5,7 @@ from .common import Common
 
 
 class Local(Common):
-    DEBUG=True
+    DEBUG = True
     SETTING = 'Local'
 
     # Database configuration

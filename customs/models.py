@@ -24,6 +24,15 @@ class UpdateTable(object):
         abstract = True
 
 
+class CacheableManager(models.Manager):
+    def get_or_none(self, *args, **kwargs):
+        try:
+            obj = self.get(*args, **kwargs)
+            return obj
+        except Exception:
+            return None
+
+
 class DateTimeModel(models.Model):
     """ A base model with created and edited datetime fields """
     created = models.DateTimeField(auto_now_add=True)

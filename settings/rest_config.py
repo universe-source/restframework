@@ -12,6 +12,9 @@ class RestConfig(object):
             'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
             'rest_framework.permissions.IsAdminUser',
         ],
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'customs.authentications.XTokenAuthentication',
+        ),
         # 如果存在, 则会自动进行分页
         'PAGE_SIZE': 10,
         'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
