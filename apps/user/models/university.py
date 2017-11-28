@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
-from customs.models import UpdateTable, DateTimeModel
+from customs.models import (UpdateTable, DateTimeModel,
+                            CacheableManager, UnCacheableManager)
 
 
 class University(UpdateTable, DateTimeModel):
@@ -12,6 +13,9 @@ class University(UpdateTable, DateTimeModel):
     location = models.CharField(max_length=255, blank=True)
     link = models.URLField(blank=True)
     description = models.TextField(blank=True)
+
+    objects = CacheableManager()
+    uncaches = UnCacheableManager()
 
     class Meta(object):
         db_table = 'university'

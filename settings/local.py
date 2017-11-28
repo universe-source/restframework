@@ -8,6 +8,9 @@ class Local(Common):
     DEBUG = True
     SETTING = 'Local'
 
+    # CACHE Open/Close
+    CACHE_QUERY = True
+
     # Database configuration
     DATABASES = {
         'default': {

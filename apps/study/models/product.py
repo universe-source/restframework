@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
-from customs.models import UpdateTable, DateTimeModel
+from customs.models import (UpdateTable, DateTimeModel,
+                            CacheableManager, UnCacheableManager)
 
 
 class Product(UpdateTable, DateTimeModel):
@@ -14,6 +15,9 @@ class Product(UpdateTable, DateTimeModel):
     goal = models.IntegerField(default=0)  # 成果为人类文明所贡献的分数
     link = models.URLField(blank=True)
     description = models.TextField(blank=True)
+
+    objects = CacheableManager()
+    uncaches = UnCacheableManager()
 
     class Meta(object):
         db_table = 'product'

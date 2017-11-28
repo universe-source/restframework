@@ -5,7 +5,8 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-from customs.models import UpdateTable, DateTimeModel, CacheableManager
+from customs.models import (UpdateTable, DateTimeModel,
+                            CacheableManager, UnCacheableManager)
 from .person import Person
 
 
@@ -20,6 +21,7 @@ class AuthToken(UpdateTable, DateTimeModel):
 
     # 自定义管理器
     objects = CacheableManager()
+    uncaches = UnCacheableManager()
 
     def __str__(self):
         return 'Token {} {}'.format(self.uid, self.key)
@@ -52,6 +54,9 @@ class AuthToken(UpdateTable, DateTimeModel):
         if not self.key:
             self.key = self.generate_key()
         self.expired_at = timezone.now() + timedelta(days=15)
+        # 1 save操作默认会根据pk进行一次查找操作, 如果有缓存就跳过, 所以这里
+        # 可能会多进行一次 SQL 操作
+        # 2 从这里可知, 尽可能的设置primary_key
         return super(AuthToken, self).save(*args, **kwargs)
 
     def expired(self):

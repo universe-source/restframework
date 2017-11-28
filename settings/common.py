@@ -17,9 +17,10 @@ from .static_config import StaticConfig
 from .log_config import LogConfig
 from .db_config import DBConfig
 from .rest_config import RestConfig
+from .cache_config import CacheConfig
 
 
-class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
+class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configuration):
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # SECURITY WARNING: keep the secret key used in production secret!
@@ -37,6 +38,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',
+        # session, 使用DB作为Cache
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
@@ -46,6 +48,8 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
         'rest_framework.authtoken',
         # shell_plus
         'django_extensions',
+        # cache
+        'cacheops',
     ]
 
     CUSTOMS_APPS = [
@@ -55,7 +59,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, Configuration):
 
     INSTALLED_APPS = INSTALLED_APPS + CUSTOMS_APPS
 
-    MIDDLEWARE_CLASSES = [
+    MIDDLEWARE = [
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',

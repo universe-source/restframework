@@ -5,15 +5,18 @@
 """
 #  from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_condition import Or
+from rest_framework import viewsets, permissions
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.decorators import list_route
 
 import errors
+from customs.permissions import AllowPostPermission
 from customs import model_update, SimpleResponse, filter_params
-from ..permissions import login_required
+from ..permissions import login_required, admin_required
 from ..models import Person
 from ..serializers import PersonSerializer
-from ..services import person_service, token_service
+from ..services import person_service, token_service, session_service
 
 
 class PersonViewSet(viewsets.ViewSet):
@@ -29,9 +32,12 @@ class PersonViewSet(viewsets.ViewSet):
     serializer_class = PersonSerializer
     lookup_field = 'pk'
     lookup_url_kwarg = 'pk'
-    # 覆盖setting中的权限
-    permission_classes = []
+    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    # 匿名用户只读, 更新则需要登录
+    permission_classes = [
+        Or(permissions.IsAuthenticatedOrReadOnly, AllowPostPermission, )]
 
+    @admin_required
     def list(self, request):
         """
         desc: list all user
@@ -52,10 +58,17 @@ class PersonViewSet(viewsets.ViewSet):
         objs = self.queryset.filter(**filter_query)
         return SimpleResponse(person_service.serializes(objs))
 
+    @login_required
     def retrieve(self, request, pk):
         """关于django onetooneField, 必须确保relationFields是一致的.
         Person表虽然会创建id字段, 但是查询时应该使用user_id
         """
+        if 'sessionid' in request.COOKIES:
+            # 方式1: 将这段代码移动到装饰器中, 进行用户的验证, 其中sessdata包含uid信息
+            # 利用get_decoded()来获取uid和过期, 从而确认用户是否拥有权限
+            sessionid = request.COOKIES.get('sessionid')
+            session = session_service.get_or_none(pk=sessionid)
+            print('Session Value:', session)
         person = get_object_or_404(self.queryset, id=pk)
         return SimpleResponse(person_service.serialize(person))
 
@@ -119,6 +132,11 @@ class PersonViewSet(viewsets.ViewSet):
         elif token:
             person = person_service.auth(token)
         if person:
+            # 方式1: 生成一个session key并存储到数据库中
+            # 方式2: 使用rest framework 自带的session
+            #  request.session['uid'] = person.id
+            #  request.session.create()
+
             data = person_service.serialize(person)
             data['token'] = token_service.serialize(person.token)
             return SimpleResponse(data=data)

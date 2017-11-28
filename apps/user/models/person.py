@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from customs.models import UpdateTable, DateTimeModel, CacheableManager
+from customs.models import (UpdateTable, DateTimeModel,
+                            CacheableManager, UnCacheableManager)
 from apps.config import GENDERS, GENDER_UNKNOWN
 
 
@@ -26,6 +27,7 @@ class Person(UpdateTable, DateTimeModel):
     province = models.CharField(max_length=50, blank=True)
 
     objects = CacheableManager()
+    uncaches = UnCacheableManager()
 
     def __str__(self):
         return 'People {} {}'.format(self.user.id, self.nickname)

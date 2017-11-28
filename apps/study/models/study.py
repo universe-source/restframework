@@ -1,6 +1,7 @@
 from django.db import models
 
-from customs.models import UpdateTable, DateTimeModel
+from customs.models import (UpdateTable, DateTimeModel,
+                            CacheableManager, UnCacheableManager)
 
 
 class Study(UpdateTable, DateTimeModel):
@@ -9,6 +10,9 @@ class Study(UpdateTable, DateTimeModel):
     uid = models.PositiveIntegerField()
     profession_id = models.PositiveIntegerField()
     university_id = models.PositiveIntegerField()
+
+    objects = CacheableManager()
+    uncaches = UnCacheableManager()
 
     class Meta(object):
         db_table = 'study'
