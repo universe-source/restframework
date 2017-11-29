@@ -43,6 +43,9 @@ class PersonService(BaseService):
                     return person
         return None
 
+    def logout(self, person):
+        pass
+
     def auth(self, key):
         token = token_service.get_or_none(key=key)
         if token and not token.expired():

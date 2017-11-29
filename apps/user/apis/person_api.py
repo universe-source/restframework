@@ -5,6 +5,7 @@
 """
 #  from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import logout as _logout, login as _login
 from rest_condition import Or
 from rest_framework import viewsets, permissions
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -13,7 +14,8 @@ from rest_framework.decorators import list_route
 import errors
 from customs.permissions import AllowPostPermission
 from customs import model_update, SimpleResponse, filter_params
-from ..permissions import login_required, admin_required
+from apps.config import SESSION_KEY
+from ..permissions import login_required, admin_required, is_user_self
 from ..models import Person
 from ..serializers import PersonSerializer
 from ..services import person_service, token_service, session_service
@@ -58,15 +60,16 @@ class PersonViewSet(viewsets.ViewSet):
         objs = self.queryset.filter(**filter_query)
         return SimpleResponse(person_service.serializes(objs))
 
-    @login_required
+    @is_user_self
     def retrieve(self, request, pk):
         """关于django onetooneField, 必须确保relationFields是一致的.
         Person表虽然会创建id字段, 但是查询时应该使用user_id
         """
-        if 'sessionid' in request.COOKIES:
+        if False and 'sessionid' in request.COOKIES:
             # 方式1: 将这段代码移动到装饰器中, 进行用户的验证, 其中sessdata包含uid信息
             # 利用get_decoded()来获取uid和过期, 从而确认用户是否拥有权限
             sessionid = request.COOKIES.get('sessionid')
+            print('Cookie sessionid: ', sessionid)
             session = session_service.get_or_none(pk=sessionid)
             print('Session Value:', session)
         person = get_object_or_404(self.queryset, id=pk)
@@ -132,15 +135,25 @@ class PersonViewSet(viewsets.ViewSet):
         elif token:
             person = person_service.auth(token)
         if person:
-            # 方式1: 生成一个session key并存储到数据库中
+            # 方式1: 生成一个session key并存储到数据库中, django自动进行 SQL 操作
             # 方式2: 使用rest framework 自带的session
-            #  request.session['uid'] = person.id
-            #  request.session.create()
-
+            #  request.session[SESSION_KEY] = person.id
+            _login(request, person.user)
             data = person_service.serialize(person)
             data['token'] = token_service.serialize(person.token)
             return SimpleResponse(data=data)
         return SimpleResponse(code=errors.CODE_CHECK_PASSWD_FAILED)
+
+    @list_route(methods=['get'])
+    @login_required
+    def logout(self, request):
+        """
+        desc: logout
+        """
+        # 对应login中的_authenticate方法, 会自动将session_key删除
+        _logout(request)
+        person_service.logout(request.user)
+        return SimpleResponse(code=errors.CODE_SUCCESSFUL)
 
     @list_route(methods=['put'])
     @login_required

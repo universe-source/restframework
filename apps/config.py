@@ -10,3 +10,5 @@ GENDERS = (
     (GENDER_FEMALE, u'女'),
     (GENDER_UNKNOWN, u'未知'),
 )
+
+SESSION_KEY = 'personid'
