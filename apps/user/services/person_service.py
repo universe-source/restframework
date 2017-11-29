@@ -28,9 +28,9 @@ class PersonService(BaseService):
     def login(self, username, password):
         """登录, 验证, 并自动延长token的过期时间"""
         if '@' in username:
-            person = self.get_or_none(user__email=username)
+            person = self.get_or_none(email=username)
             if person:
-                username = person.user.username
+                username = person.username
             else:
                 username = None
         if username:

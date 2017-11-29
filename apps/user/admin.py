@@ -1,22 +1,24 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserChangeForm
 
 from .models import Person
 
 
-class PersonInline(admin.StackedInline):
-    """添加该类以便在django自带的管理后台控制 Person """
-    model = Person
-    can_delete = False
-    verbose_name_plural = 'person'
+class PersonChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = Person
 
 
 class PersonAdmin(UserAdmin):
-    # Define a new User admin
-    inlines = (PersonInline, )
+    """参考: https://stackoverflow.com/questions/15012235/using-django-auth-useradmin-for-a-custom-user-model
+    """
+    form = PersonChangeForm
+
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('nickname', )}),
+    )
 
 
 # Re-register UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, PersonAdmin)
+admin.site.register(Person, PersonAdmin)

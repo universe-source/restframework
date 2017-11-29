@@ -38,10 +38,10 @@ def check_authorized(request, pk=None):
     # NOTE: 对于User Proxy, 有一些特殊处理, 以后不建议使用 User Proxy, 过于麻烦
     #       在该项目中仅仅作为一个实验
     if is_authenticated(request):
-        if request.user.user and request.user.user.is_authenticated:
+        if request.user and request.user.is_authenticated:
             if pk:
                 pk = int(pk)
-                if request.user.pk != pk and not request.user.user.is_superuser:
+                if request.user.pk != pk and not request.user.is_superuser:
                     return False
             return True
     return False
@@ -49,7 +49,7 @@ def check_authorized(request, pk=None):
 
 def check_admin_authorized(request):
     if is_authenticated(request):
-        if request.user.user:
-            if request.user.user.is_authenticated and request.user.user.is_superuser:
+        if request.user:
+            if request.user.is_authenticated and request.user.is_superuser:
                 return True
     return False

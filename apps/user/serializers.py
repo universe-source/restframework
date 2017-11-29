@@ -1,13 +1,6 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 from .models import Person, AuthToken
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = ('id', 'is_staff', 'password', 'last_login', 'is_superuser',
-                   'is_active', 'groups', 'user_permissions')
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -18,11 +11,9 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class PersonSerializer(serializers.ModelSerializer):
     """Person相当于对 User 进行封装"""
-    user = UserSerializer()
-
     class Meta:
         model = Person
-        exclude = ('updated', 'created')
+        exclude = ('id', 'is_superuser', 'password', 'last_login', 'updated', 'created')
 
 
 class TokenSerializer(serializers.ModelSerializer):

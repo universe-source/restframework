@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 
 from customs.models import (UpdateTable, DateTimeModel,
@@ -7,30 +7,41 @@ from customs.models import (UpdateTable, DateTimeModel,
 from apps.config import GENDERS, GENDER_UNKNOWN
 
 
-class Person(UpdateTable, DateTimeModel):
-    """使用代理模式来扩展用户表, 类似一个ForeignKey, 并且设置了unique=True
-        User<---->Person, 一一对应关系
-    使用例子见:
-        http://python.usyiyi.cn/documents/django_182/topics/db/examples/one_to_one.html
-    获取queryset时, 实际 SQL 命令:
-        SELECT `user_person`.`id`, `user_person`.`user_id`, `user_person`.`age`
-        FROM `user_person` INNER JOIN `auth_user`
-        ON (`user_person`.`user_id` = `auth_user`.`id`)
-        ORDER BY `auth_user`.`date_joined` DESC
+class Person(UpdateTable, DateTimeModel, AbstractBaseUser, PermissionsMixin):
+    """ 代理模式--见分支develop_userproxy
+        重写User模型;
+        参考:
+          http://python.usyiyi.cn/translate/django_182/topics/auth/customizing.html
+          https://www.caktusgroup.com/blog/2013/08/07/migrating-custom-user-model-django/
     """
-    user = models.OneToOneField(User)  # 确保email是唯一的
-    nickname = models.CharField(max_length=50, blank=True)
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(max_length=254, unique=True)
+    nickname = models.CharField(max_length=100, blank=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
     age = models.IntegerField(default=0)
     gender = models.CharField(max_length=10, choices=GENDERS, default=GENDER_UNKNOWN)
     birthday = models.DateTimeField(default=timezone.now)
     country_code = models.CharField(max_length=2, default='CN')
     province = models.CharField(max_length=50, blank=True)
+    is_superuser = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
     objects = CacheableManager()
     uncaches = UnCacheableManager()
 
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
     def __str__(self):
-        return 'People {} {}'.format(self.user.id, self.nickname)
+        return 'User {} {}'.format(self.pk, self.nickname)
 
     class Meta(object):
-        db_table = 'person'
+        db_table = 'user'
+
+    def get_full_name(self):
+        return '{} {}'.format(self.first_name, self.last_name)
+
+    def get_short_name(self):
+        return self.nickname
