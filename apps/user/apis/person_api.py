@@ -13,8 +13,7 @@ from rest_framework.decorators import list_route
 
 import errors
 from customs.permissions import AllowPostPermission
-from customs import model_update, SimpleResponse, filter_params
-from apps.config import SESSION_KEY
+from customs import SimpleResponse, filter_params
 from ..permissions import login_required, admin_required, is_user_self
 from ..models import Person
 from ..serializers import PersonSerializer
@@ -85,10 +84,8 @@ class PersonViewSet(viewsets.ViewSet):
               location: body
         Example Request:
             {
-                "user": {
-                    "first_name": "我是first",
-                    "last_name": "我是last"
-                },
+                "first_name": "我是first",
+                "last_name": "我是last"
                 "age": 8,
                 "nickname": "ni1",
                 "gender": "M",
@@ -97,12 +94,9 @@ class PersonViewSet(viewsets.ViewSet):
         """
         person = get_object_or_404(self.queryset, id=pk)
 
-        user_params = filter_params(
-            request.data.pop('user', {}), ('first_name', 'last_name'))
         person_params = filter_params(
-            request.data, ('age', 'nickname', 'gender', 'birthday'))
-
-        model_update(person.user, **user_params)
+            request.data, ('age', 'nickname', 'gender', 'birthday',
+                           'first_name', 'last_name'))
         person.update(**person_params)
 
         return SimpleResponse(person_service.serialize(person))
@@ -137,8 +131,9 @@ class PersonViewSet(viewsets.ViewSet):
         if person:
             # 方式1: 生成一个session key并存储到数据库中, django自动进行 SQL 操作
             # 方式2: 使用rest framework 自带的session
+            #  from apps.config import SESSION_KEY
             #  request.session[SESSION_KEY] = person.id
-            _login(request, person.user)
+            _login(request, person)
             data = person_service.serialize(person)
             data['token'] = token_service.serialize(person.token)
             return SimpleResponse(data=data)
@@ -154,6 +149,24 @@ class PersonViewSet(viewsets.ViewSet):
         _logout(request)
         person_service.logout(request.user)
         return SimpleResponse(code=errors.CODE_SUCCESSFUL)
+
+    @list_route(methods=['post'])
+    def register(self, request):
+        """
+        desc: register
+        parameters:
+            - name: body
+              paramType: body
+              required: True
+              location: body
+        Example Request:
+            {
+                "username": "xxxx",
+                "email": "bifeng@163.com",
+                "password": "xxxx",
+            }
+        """
+        pass
 
     @list_route(methods=['put'])
     @login_required

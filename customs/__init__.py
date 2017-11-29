@@ -1,4 +1,6 @@
 from .response import SimpleResponse, SimpleJsonResponse
-from .models import model_update, DateTimeModel
+from .models import (UpdateTable, model_update, DateTimeModel,
+                     CacheableManager, UnCacheableManager)
 from .base_service import BaseService
 from .params import filter_params, check_params
+from .helpers import gen_fake_email

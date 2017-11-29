@@ -34,17 +34,15 @@ class PersonService(BaseService):
             else:
                 username = None
         if username:
-            user = _authenticate(username=username, password=password)
-            if user:
-                person = self.get_or_none(user=user)
-                if person:
-                    token = token_service.login(person)
-                    person.token = token
-                    return person
+            person = _authenticate(username=username, password=password)
+            if person:
+                token = token_service.login(person)
+                person.token = token
+                return person
         return None
 
     def logout(self, person):
-        pass
+        return token_service.expire(person)
 
     def auth(self, key):
         token = token_service.get_or_none(key=key)

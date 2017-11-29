@@ -62,6 +62,10 @@ class AuthToken(UpdateTable, DateTimeModel):
     def expired(self):
         return self.expired_at < timezone.now()
 
+    def expire(self):
+        self.expired_at = timezone.now() - timedelta(days=1)
+        return super(AuthToken, self).save()
+
     def defer(self):
         self.expired_at = timezone.now() + timedelta(days=15)
         self.save()

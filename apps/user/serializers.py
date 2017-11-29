@@ -11,9 +11,20 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class PersonSerializer(serializers.ModelSerializer):
     """Person相当于对 User 进行封装"""
+    # 更改返回的key
+    created = serializers.SerializerMethodField('get_date_joined')
+    updated = serializers.SerializerMethodField('get_last_login')
+
     class Meta:
         model = Person
-        exclude = ('id', 'is_superuser', 'password', 'last_login', 'updated', 'created')
+        exclude = ('is_superuser', 'password', 'last_login', 'date_joined',
+                   'is_active', 'is_staff', 'groups', 'user_permissions')
+
+    def get_date_joined(self, obj):
+        return obj.date_joined
+
+    def get_last_login(self, obj):
+        return obj.last_login
 
 
 class TokenSerializer(serializers.ModelSerializer):

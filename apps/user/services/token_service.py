@@ -27,6 +27,11 @@ class TokenService(BaseService):
             token.save()
         return token
 
+    def expire(self, person):
+        token = self.get_or_none(uid=person.id)
+        if token:
+            token.expire()
+
     def defer(self, person):
         token = self.get_or_none(uid=person.id)
         if token:

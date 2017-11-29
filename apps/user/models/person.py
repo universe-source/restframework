@@ -2,12 +2,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 
-from customs.models import (UpdateTable, DateTimeModel,
-                            CacheableManager, UnCacheableManager)
+from customs import UpdateTable, gen_fake_email
 from apps.config import GENDERS, GENDER_UNKNOWN
+from ..managers import PersonManager
 
 
-class Person(UpdateTable, DateTimeModel, AbstractBaseUser, PermissionsMixin):
+class Person(AbstractBaseUser, PermissionsMixin, UpdateTable):
     """ 代理模式--见分支develop_userproxy
         重写User模型;
         参考:
@@ -15,7 +15,7 @@ class Person(UpdateTable, DateTimeModel, AbstractBaseUser, PermissionsMixin):
           https://www.caktusgroup.com/blog/2013/08/07/migrating-custom-user-model-django/
     """
     username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(max_length=254, unique=True, default=gen_fake_email)
     nickname = models.CharField(max_length=100, blank=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -27,9 +27,10 @@ class Person(UpdateTable, DateTimeModel, AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(default=timezone.now)
 
-    objects = CacheableManager()
-    uncaches = UnCacheableManager()
+    # 对于重写User模型, 需要一个自定义的管理器
+    objects = PersonManager()
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']

@@ -36,7 +36,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
     # Application definition
     INSTALLED_APPS = [
         # 确保安装django 1.9以上版本, 否则rest报错
-        'django_admin_bootstrapped',
+        #  'django_admin_bootstrapped',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',
