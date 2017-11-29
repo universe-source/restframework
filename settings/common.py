@@ -31,6 +31,8 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
 
     ALLOWED_HOSTS = []
 
+    AUTH_USER_MODEL = 'user.Person'
+
     # Application definition
     INSTALLED_APPS = [
         # 确保安装django 1.9以上版本, 否则rest报错
@@ -45,7 +47,8 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
 
         'rest_framework',
         'rest_framework_swagger',
-        'rest_framework.authtoken',
+        #  使用自定义token, 而并非rest自带
+        #  'rest_framework.authtoken',
         # shell_plus
         'django_extensions',
         # cache
