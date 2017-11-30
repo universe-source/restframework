@@ -19,7 +19,7 @@ class MailService(BaseService, BaseSerializer):
     desc = 'Mail object serializes'
 
     def send(self, to, subject, **kwargs):
-        succ = sendcloud_service.send_simple_test(to, subject, **kwargs)
+        succ = sendcloud_service.send_template_simple_test(to, subject, **kwargs)
         if succ:
             return True
         return False
@@ -28,16 +28,16 @@ class MailService(BaseService, BaseSerializer):
         """发送用户激活邮件"""
         # ready
         subject = kwargs.get('subject', '用户激活邮件')
-        content = '激活: http://127.0.0.1:8082/users/validate/?sign={}'.format(sign)
+        url = 'http://127.0.0.1:8082/users/validate/?sign={}'.format(sign)
         data = {
-            'content': content
+            'url': url,
+            'username': kwargs.get('username')
         }
 
         # send
-        succ = self.send(to, subject, **data)
+        result = self.send(to, subject, **data)
 
         # save
-        sent = True if succ else False
         from_email = sendcloud_service.from_email
         mail_type = 'test'
         self.create(from_email=from_email,
@@ -45,9 +45,10 @@ class MailService(BaseService, BaseSerializer):
                     subject=subject,
                     mail_type=mail_type,
                     template='test',
-                    content=content,
-                    sent=sent)
-        return sent
+                    content=data,
+                    error=result.get('error'),
+                    sent=result.get('sent'))
+        return result.get('sent')
 
 
 mail_service = MailService()

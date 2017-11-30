@@ -73,7 +73,8 @@ class PersonService(BaseService, BaseSerializer):
                 # TODO: send email to user
                 sign = self._generate_sign(person)
                 person.sign = sign
-                mail_service.send_active_mail('unusebamboo@163.com', sign)
+                mail_service.send_active_mail('unusebamboo@163.com', sign,
+                                              **{'username': person.nickname})
                 return True, person
             logger.error('Create user failed, check: username, password, email')
             return False, errors.CODE_CREATE_USER_FAILED
