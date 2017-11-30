@@ -24,7 +24,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = '7uv3esw%3!p1h88!j*bz%@5go@dmy0e@_)zx=762oi!dif03zx'
+    SECRET_KEY = '7uv3esw%3!p1h88!j*bz%@5go@zheng@bifeng@_)zx=762oi!dif03zx'
 
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = True
@@ -58,6 +58,7 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
     CUSTOMS_APPS = [
         'apps.user',
         'apps.study',
+        'apps.mail',
     ]
 
     INSTALLED_APPS = INSTALLED_APPS + CUSTOMS_APPS

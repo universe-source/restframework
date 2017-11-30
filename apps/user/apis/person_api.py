@@ -18,6 +18,7 @@ from ..permissions import login_required, admin_required, is_user_self
 from ..models import Person
 from ..serializers import PersonSerializer
 from ..services import person_service, token_service, session_service
+from ..params import check_params
 
 
 class PersonViewSet(viewsets.ViewSet):
@@ -101,7 +102,7 @@ class PersonViewSet(viewsets.ViewSet):
 
         return SimpleResponse(person_service.serialize(person))
 
-    @list_route(methods=['post'])
+    @list_route(methods=['post', 'get'])
     def login(self, request):
         """
         desc: login
@@ -116,28 +117,29 @@ class PersonViewSet(viewsets.ViewSet):
                 "password": "xxxx",
             }
             or
-            {
-                "token": "key"
-            }
+            GET url?token=key
         """
-        username = request.data.get('username')
-        password = request.data.get('password')
-        token = request.data.get('token')
-        person = None
-        if username and password:
-            person = person_service.login(username, password)
-        elif token:
+        if request.method == 'GET':
+            token = request.query_params.get('token')
             person = person_service.auth(token)
-        if person:
-            # 方式1: 生成一个session key并存储到数据库中, django自动进行 SQL 操作
-            # 方式2: 使用rest framework 自带的session
-            #  from apps.config import SESSION_KEY
-            #  request.session[SESSION_KEY] = person.id
-            _login(request, person)
-            data = person_service.serialize(person)
-            data['token'] = token_service.serialize(person.token)
-            return SimpleResponse(data=data)
-        return SimpleResponse(code=errors.CODE_CHECK_PASSWD_FAILED)
+            if person:
+                return SimpleResponse(data=person_service.serialize(person))
+            return SimpleResponse(code=errors.CODE_BAD_TOKEN)
+        elif request.method == 'POST':
+            username = request.data.get('username')
+            password = request.data.get('password')
+            person = None
+            person = person_service.login(username, password)
+            if person:
+                # 方式1: 生成一个session key并存储到数据库中, django自动进行 SQL 操作
+                # 方式2: 使用rest framework 自带的session
+                #  from apps.config import SESSION_KEY
+                #  request.session[SESSION_KEY] = person.id
+                _login(request, person)
+                data = person_service.serialize(person)
+                data['token'] = token_service.serialize(person.token)
+                return SimpleResponse(data=data)
+            return SimpleResponse(code=errors.CODE_CHECK_PASSWD_FAILED)
 
     @list_route(methods=['get'])
     @login_required
@@ -166,7 +168,46 @@ class PersonViewSet(viewsets.ViewSet):
                 "password": "xxxx",
             }
         """
-        pass
+        succ, kwargs = check_params(request.data, ('username', 'password', 'email'))
+        if succ:
+            kwargs.update(filter_params(
+                request.data, ('nickname', 'age', 'gender', 'country_code',
+                               'province', 'birthday', 'first_name', 'last_name')
+            ))
+            succ, person = person_service.register(
+                kwargs.pop('username'), kwargs.pop('password'), **kwargs)
+            if succ:
+                token = token_service.get_or_none(uid=person.id)
+                if token:
+                    data = person_service.serialize(person)
+                    data['token'] = token_service.serialize(token)
+                    data['sign'] = person.sign
+                    return SimpleResponse(data=data)
+                return SimpleResponse(code=errors.CODE_UNEXIST_TOKEN)
+            return SimpleResponse(code=person)
+        return SimpleResponse(message='Leak of keys:{}'.format(kwargs))
+
+    @list_route(methods=['get'])
+    def validate(self, request):
+        """
+        desc: validate sign
+        parameters:
+        - name: sign
+            type: string
+            location: query
+        """
+        sign = request.query_params.get('sign')
+        if sign:
+            succ, person = person_service.validate(sign)
+            if succ:
+                token = token_service.get_or_none(uid=person.id)
+                if token:
+                    data = person_service.serialize(person)
+                    data['token'] = token_service.serialize(token)
+                    return SimpleResponse(data=data)
+                return SimpleResponse(code=errors.CODE_UNEXIST_TOKEN)
+            return SimpleResponse(code=person)
+        return SimpleResponse(code=errors.CODE_BAD_ARGUMENT)
 
     @list_route(methods=['put'])
     @login_required
@@ -174,7 +215,7 @@ class PersonViewSet(viewsets.ViewSet):
         """
         desc: defer token expired
         """
-        succ = person_service.defer(request.user)
+        succ = token_service.defer(request.user)
         if succ:
             return SimpleResponse(code=errors.CODE_SUCCESSFUL)
         return SimpleResponse(code=errors.CODE_FAILED)

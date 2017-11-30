@@ -18,7 +18,7 @@ class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
         exclude = ('is_superuser', 'password', 'last_login', 'date_joined',
-                   'is_active', 'is_staff', 'groups', 'user_permissions')
+                   'is_staff', 'groups', 'user_permissions')
 
     def get_date_joined(self, obj):
         return obj.date_joined

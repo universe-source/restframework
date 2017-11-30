@@ -55,7 +55,7 @@ class AuthToken(UpdateTable, DateTimeModel):
             self.key = self.generate_key()
         self.expired_at = timezone.now() + timedelta(days=15)
         # 1 save操作默认会根据pk进行一次查找操作, 如果有缓存就跳过, 所以这里
-        # 可能会多进行一次 SQL 操作
+        #   可能会多进行一次 SQL 操作
         # 2 从这里可知, 尽可能的设置primary_key
         return super(AuthToken, self).save(*args, **kwargs)
 

@@ -21,7 +21,7 @@ class PersonManager(BaseUserManager, CacheableManager):
             last_login=now, is_active=False,
             date_joined=now)
         for field in ('nickname', 'first_name', 'last_name', 'age', 'gender',
-                      'birthday', 'country_code', 'province'):
+                      'birthday', 'country_code', 'province', 'is_active'):
             if field in kwargs:
                 setattr(user, field, kwargs.get(field))
         user.set_password(password)
