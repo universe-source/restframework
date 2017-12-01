@@ -2,6 +2,7 @@
     Configure
 """
 
+
 GENDER_MALE = 'M'
 GENDER_FEMALE = 'F'
 GENDER_UNKNOWN = 'U'

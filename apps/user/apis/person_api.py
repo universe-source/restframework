@@ -5,19 +5,19 @@
 """
 #  from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import logout as _logout, login as _login
 from rest_condition import Or
 from rest_framework import viewsets, permissions
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import list_route
 
 import errors
+from customs.authentications import XTokenAuthentication
 from customs.permissions import AllowPostPermission
 from customs import SimpleResponse, filter_params
 from ..permissions import login_required, admin_required, is_user_self
 from ..models import Person
 from ..serializers import PersonSerializer
-from ..services import person_service, token_service, session_service
+from ..services import person_service, token_service
 from ..params import check_params
 
 
@@ -34,7 +34,8 @@ class PersonViewSet(viewsets.ViewSet):
     serializer_class = PersonSerializer
     lookup_field = 'pk'
     lookup_url_kwarg = 'pk'
-    authentication_classes = (SessionAuthentication, BasicAuthentication)
+    # 确定使用的Rest Framework Authentiation类, 非常重要
+    authentication_classes = (BasicAuthentication, XTokenAuthentication)
     # 匿名用户只读, 更新则需要登录
     permission_classes = [
         Or(permissions.IsAuthenticatedOrReadOnly, AllowPostPermission, )]
@@ -66,12 +67,14 @@ class PersonViewSet(viewsets.ViewSet):
         Person表虽然会创建id字段, 但是查询时应该使用user_id
         """
         if False and 'sessionid' in request.COOKIES:
+            #  from ..services.session_service import session_service
             # 方式1: 将这段代码移动到装饰器中, 进行用户的验证, 其中sessdata包含uid信息
             # 利用get_decoded()来获取uid和过期, 从而确认用户是否拥有权限
-            sessionid = request.COOKIES.get('sessionid')
-            print('Cookie sessionid: ', sessionid)
-            session = session_service.get_or_none(pk=sessionid)
-            print('Session Value:', session)
+            #  sessionid = request.COOKIES.get('sessionid')
+            #  print('Cookie sessionid: ', sessionid)
+            #  session = session_service.get_or_none(pk=sessionid)
+            #  print('Session Value:', session)
+            pass
         person = get_object_or_404(self.queryset, id=pk)
         return SimpleResponse(person_service.serialize(person))
 
@@ -135,6 +138,8 @@ class PersonViewSet(viewsets.ViewSet):
                 # 方式2: 使用rest framework 自带的session
                 #  from apps.config import SESSION_KEY
                 #  request.session[SESSION_KEY] = person.id
+
+                from django.contrib.auth import login as _login
                 _login(request, person)
                 data = person_service.serialize(person)
                 data['token'] = token_service.serialize(person.token)
@@ -147,7 +152,9 @@ class PersonViewSet(viewsets.ViewSet):
         """
         desc: logout
         """
-        # 对应login中的_authenticate方法, 会自动将session_key删除
+        # 1 对应login中的_authenticate方法, 会自动将session_key删除
+        #   注意: 如果不支持session, 则不能调用该方法
+        from django.contrib.auth import logout as _logout
         _logout(request)
         person_service.logout(request.user)
         return SimpleResponse(code=errors.CODE_SUCCESSFUL)
@@ -208,6 +215,17 @@ class PersonViewSet(viewsets.ViewSet):
                 return SimpleResponse(code=errors.CODE_UNEXIST_TOKEN)
             return SimpleResponse(code=person)
         return SimpleResponse(code=errors.CODE_BAD_ARGUMENT)
+
+    @list_route(methods=['get'])
+    @login_required
+    def reactive(self, request):
+        """
+        desc: reactive user(resend active mail)
+        """
+        succ = person_service.send_active_email(request.user)
+        if succ:
+            return SimpleResponse(code=errors.CODE_SUCCESSFUL)
+        return SimpleResponse(code=errors.CODE_DEFAULT_BUSY)
 
     @list_route(methods=['put'])
     @login_required

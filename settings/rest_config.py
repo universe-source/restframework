@@ -14,7 +14,6 @@ class RestConfig(object):
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.BasicAuthentication',
-            #  'rest_framework.authentication.SessionAuthentication',
             'customs.authentications.XTokenAuthentication',
         ),
         # 如果存在, 则会自动进行分页

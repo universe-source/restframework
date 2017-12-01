@@ -19,32 +19,26 @@ class MailService(BaseService, BaseSerializer):
     desc = 'Mail object serializes'
 
     def send(self, to, subject, **kwargs):
-        succ = sendcloud_service.send_template_simple_test(to, subject, **kwargs)
-        if succ:
-            return True
-        return False
+        return sendcloud_service.send_template_simple_test(to, subject, **kwargs)
 
-    def send_active_mail(self, to, sign, **kwargs):
-        """发送用户激活邮件"""
+    def send_active_mail(self, to, **kwargs):
+        """发送用户激活邮件, 根据模板来准备相应的数据"""
         # ready
-        subject = kwargs.get('subject', '用户激活邮件')
-        url = 'http://127.0.0.1:8082/users/validate/?sign={}'.format(sign)
         data = {
-            'url': url,
+            'url': kwargs.get('url'),
             'username': kwargs.get('username')
         }
 
         # send
-        result = self.send(to, subject, **data)
+        result = self.send(to, kwargs.get('subject'), **data)
 
         # save
         from_email = sendcloud_service.from_email
-        mail_type = 'test'
         self.create(from_email=from_email,
                     to_email=to,
-                    subject=subject,
-                    mail_type=mail_type,
-                    template='test',
+                    subject=result.get('subject'),
+                    mail_type='trigger',
+                    template=result.get('template'),
                     content=data,
                     error=result.get('error'),
                     sent=result.get('sent'))

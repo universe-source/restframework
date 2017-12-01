@@ -47,8 +47,8 @@ class Common(StaticConfig, LogConfig, DBConfig, RestConfig, CacheConfig, Configu
 
         'rest_framework',
         'rest_framework_swagger',
-        #  使用自定义token, 而并非rest自带
-        #  'rest_framework.authtoken',
+        #  使用migrate默认会创建一个表, 需要手动删除
+        'rest_framework.authtoken',
         # shell_plus
         'django_extensions',
         # cache

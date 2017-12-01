@@ -4,6 +4,7 @@ person基本操作
 import logging
 import base64
 from django.db import transaction
+from django.conf import settings
 from django.contrib.auth import authenticate as _authenticate
 
 import errors
@@ -59,7 +60,21 @@ class PersonService(BaseService, BaseSerializer):
         }
         value = utsrtimesign_service.encode_qs_value(**kwargs)
         sign = utsrtimesign_service.generate_validate_sign(value)
+        person.sign = sign
         return sign
+
+    def send_active_email(self, person, **kwargs):
+        to = 'unusebamboo@163.com'
+        sign = self._generate_sign(person)
+        params = {
+            'url': '{}/users/validate/?sign={}'.format(settings.DEFAULT_URL, sign),
+            'username': person.nickname,
+        }
+        succ = mail_service.send_active_mail(to, **params)
+        if succ:
+            return True
+        logging.info('Send mail to {} failed, data:{}'.format(to, params))
+        return False
 
     @transaction.atomic
     def register(self, username, password, **kwargs):
@@ -70,11 +85,7 @@ class PersonService(BaseService, BaseSerializer):
             kwargs['is_active'] = False
             person = self.model.objects.create_user(username, password, **kwargs)
             if person:
-                # TODO: send email to user
-                sign = self._generate_sign(person)
-                person.sign = sign
-                mail_service.send_active_mail('unusebamboo@163.com', sign,
-                                              **{'username': person.nickname})
+                self.send_active_email(person)
                 return True, person
             logger.error('Create user failed, check: username, password, email')
             return False, errors.CODE_CREATE_USER_FAILED
