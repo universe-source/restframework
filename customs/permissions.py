@@ -20,12 +20,13 @@ def is_authenticated(request):
     """Token authenticated and session authenticated"""
     if request.user and not isinstance(request.user, AnonymousUser):
         return True
-    print('===================session==================')
+    print('============Custom Session===============')
     sessionid = request.session.get(SESSION_KEY)
-    person = person_service.get_or_none(id=sessionid)
-    if person:
-        request.user = person
-        return True
+    if sessionid:
+        person = person_service.get_or_none(id=sessionid)
+        if person:
+            request.user = person
+            return True
     return False
 
 
