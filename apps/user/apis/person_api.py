@@ -30,7 +30,7 @@ class PersonViewSet(viewsets.ViewSet):
     # queryset: 用于list接口, 如果 API 中没有使用到queryset, 那么实际上不会产生任何效果
     # PS: 如果在程序运行一段时间之后, 利用 SQL 在用户表中增加一个新用户, 则因为缓存
     #       可能不会返回
-    queryset = Person.objects.all().order_by('-user__date_joined')
+    queryset = Person.objects.all().order_by('-date_joined')
     serializer_class = PersonSerializer
     lookup_field = 'pk'
     lookup_url_kwarg = 'pk'

@@ -2,7 +2,7 @@
 from rest_framework import permissions
 from django.contrib.auth.models import AnonymousUser
 
-from apps.config import SESSION_KEY
+from apps.config import Config
 from apps.user.services import person_service
 
 
@@ -21,7 +21,7 @@ def is_authenticated(request):
     if request.user and not isinstance(request.user, AnonymousUser):
         return True
     print('============Custom Session===============')
-    sessionid = request.session.get(SESSION_KEY)
+    sessionid = request.session.get(Config.SESSION_KEY)
     if sessionid:
         person = person_service.get_or_none(id=sessionid)
         if person:

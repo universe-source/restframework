@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
 
 from customs import UpdateTable, gen_fake_email
-from apps.config import GENDERS, GENDER_UNKNOWN
+from apps.config import Config
 from ..managers import PersonManager
 
 
@@ -20,7 +20,8 @@ class Person(AbstractBaseUser, PermissionsMixin, UpdateTable):
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     age = models.IntegerField(default=0)
-    gender = models.CharField(max_length=10, choices=GENDERS, default=GENDER_UNKNOWN)
+    gender = models.CharField(max_length=10, choices=Config.GENDERS,
+                              default=Config.GENDER_UNKNOWN)
     birthday = models.DateTimeField(default=timezone.now)
     country_code = models.CharField(max_length=2, default='CN')
     province = models.CharField(max_length=50, blank=True)
