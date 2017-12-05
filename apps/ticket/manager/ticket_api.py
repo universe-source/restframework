@@ -80,7 +80,7 @@ class TicketTaskViewSet(viewsets.ViewSet):
             "alias": "alias name",
             "audit": {
             },
-            "desc": "This is descript of current ticket type."
+            "desc": "This is description of current ticket type."
         }
         """
         pass
